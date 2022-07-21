@@ -1,8 +1,13 @@
+# coding=utf-8
+# Copyright 2018 The Google AI Language Team Authors.
+# I have just rewritten stuff so that it works without tensorflow
+
 """Script to compute PARENT metric."""
 
 import collections, itertools, math
 
 import collections, itertools, math
+import json
 
 
 
@@ -122,7 +127,7 @@ def _ngram_counts(sequence, order):
     return collections.Counter(_ngrams(sequence, order))
 
 
-def parent(predictions,
+def parent(raw_instances,
            references,
            tables,
            lambda_weight=0.5,
@@ -150,7 +155,8 @@ def parent(predictions,
       ngram is entailed by the table. Its signature should match that of
       `overlap_probability` above.
     mention_fn: A python function for computing the probability that a
-      table entry is mentioned in the text. Its signature should
+          if ngram_rec[order] == 0.:
+table entry is mentioned in the text. Its signature should
         match that of `_mention_probability` above.
     Returns:
     precision: Average precision of all predictions.
@@ -161,59 +167,49 @@ def parent(predictions,
     precisions, recalls, all_f_scores = [], [], []
     reference_recalls, table_recalls = [], []
     all_lambdas = []
-    for prediction, list_of_references, table in zip(
-            predictions, references, tables):
+    instances = []
+    for raw_instance, list_of_references, table in zip(
+            raw_instances, references, tables):
         c_prec, c_rec, c_f = [], [], []
         ref_rec, table_rec = [], []
+
         for reference in list_of_references:
             # Weighted ngram precisions and recalls for each order.
             ngram_prec, ngram_rec = [], []
             for order in range(1, max_order + 1):
-                # Collect n-grams and their entailment probabilities.
 
                 ref_ngram_counts = _ngram_counts(reference, order)
+                print(ref_ngram_counts)
                 ref_ngram_weights = {ngram: entailment_fn(ngram, table)
                                      for ngram in ref_ngram_counts}
+                print(ref_ngram_weights)
 
                 # Precision.
                 numerator, denominator = 0., 0.
-                for ngram, count in pred_ngram_counts.items():
+                for ngram, count in ref_ngram_counts.items():
                     denominator += count
-                    prob_ngram_in_ref = min(
-                        1., float(ref_ngram_counts.get(ngram, 0) / count))
-                    numerator += count * (
-                            prob_ngram_in_ref +
-                            (1. - prob_ngram_in_ref) * pred_ngram_weights[ngram])
+
+                    numerator += count * ref_ngram_weights[ngram]
                 if denominator == 0.:
                     # Set precision to 0.
                     ngram_prec.append(0.0)
                 else:
                     ngram_prec.append(numerator / denominator)
 
-                # Recall.
-                numerator, denominator = 0., 0.
-                for ngram, count in ref_ngram_counts.items():
-                    prob_ngram_in_pred = min(
-                        1., float(pred_ngram_counts.get(ngram, 0) / count))
-                    denominator += count * ref_ngram_weights[ngram]
-                    numerator += count * ref_ngram_weights[ngram] * prob_ngram_in_pred
-                if denominator == 0.:
-                    # Set recall to 1.
-                    ngram_rec.append(1.0)
-                else:
-                    ngram_rec.append(numerator / denominator)
+            print(ngram_prec)
+
+
 
             # Compute recall against table fields.
-            table_mention_probs = [mention_fn(entry, prediction)
+            table_mention_probs = [mention_fn(entry, reference)
                                    for entry in table]
             table_rec.append(sum(table_mention_probs) / len(table))
 
             # Smoothing.
             for order in range(1, max_order):
+                print(order)
                 if ngram_prec[order] == 0.:
                     ngram_prec[order] = smoothing
-                if ngram_rec[order] == 0.:
-                    ngram_rec[order] = smoothing
 
             # Compute geometric averages of precision and recall for all orders.
             w = 1. / max_order
@@ -222,16 +218,12 @@ def parent(predictions,
             else:
                 sp = (w * math.log(p_i) for p_i in ngram_prec)
                 c_prec.append(math.exp(math.fsum(sp)))
-            if any(rec == 0. for rec in ngram_rec):
-                ref_rec.append(smoothing)
-            else:
-                sr = [w * math.log(r_i) for r_i in ngram_rec]
-                ref_rec.append(math.exp(math.fsum(sr)))
+
 
             # Combine reference and table recalls.
             if table_rec[-1] == 0.:
                 table_rec[-1] = smoothing
-            if ref_rec[-1] == 0. or table_rec[-1] == 0.:
+            if table_rec[-1] == 0.:
                 c_rec.append(0.)
             else:
                 if lambda_weight is None:
@@ -242,7 +234,7 @@ def parent(predictions,
                     lw = lambda_weight
                 all_lambdas.append(lw)
                 c_rec.append(
-                    math.exp((1. - lw) * math.log(ref_rec[-1]) +
+                    math.exp(
                              (lw) * math.log(table_rec[-1])))
 
             # F-score.
@@ -251,15 +243,24 @@ def parent(predictions,
 
         # Get index of best F-score.
         max_i = max(enumerate(c_f), key=lambda x: x[1])[0]
+        raw_instance['precision'] = c_prec[max_i]
+        raw_instance['recall'] = c_rec[max_i]
+        raw_instance['f1'] = c_f[max_i]
+        instances.append(raw_instance)
         precisions.append(c_prec[max_i])
         recalls.append(c_rec[max_i])
         all_f_scores.append(c_f[max_i])
-        reference_recalls.append(ref_rec[max_i])
         table_recalls.append(table_rec[max_i])
 
     avg_precision = sum(precisions) / len(precisions)
     avg_recall = sum(recalls) / len(recalls)
     avg_f_score = sum(all_f_scores) / len(all_f_scores)
 
-    return avg_precision, avg_recall, avg_f_score, all_f_scores
 
+    with open('Textgen/output.jsonl', 'w') as outfile:
+        for entry in instances:
+            json.dump(entry, outfile)
+            outfile.write('\n')
+
+
+    return avg_precision, avg_recall, avg_f_score
