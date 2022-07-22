@@ -9,6 +9,8 @@ with open('Textgen/train_tables.jl', mode="r", encoding='utf8') as f:
 
 with open('Textgen/train_output.txt', mode="r", encoding='utf8') as f:
     references = [line.strip().split() for line in f if line.strip()]
+print(references)
+
 print(len(tables) == len(references))
 path = f'corpus/train.tsv'
 with jsonlines.open(path) as reader:

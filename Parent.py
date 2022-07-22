@@ -168,78 +168,81 @@ table entry is mentioned in the text. Its signature should
     reference_recalls, table_recalls = [], []
     all_lambdas = []
     instances = []
+    print(references)
     for raw_instance, list_of_references, table in zip(
             raw_instances, references, tables):
         c_prec, c_rec, c_f = [], [], []
         ref_rec, table_rec = [], []
-
-        for reference in list_of_references:
-            # Weighted ngram precisions and recalls for each order.
-            ngram_prec, ngram_rec = [], []
-            for order in range(1, max_order + 1):
-
-                ref_ngram_counts = _ngram_counts(reference, order)
-                print(ref_ngram_counts)
-                ref_ngram_weights = {ngram: entailment_fn(ngram, table)
-                                     for ngram in ref_ngram_counts}
-                print(ref_ngram_weights)
-
-                # Precision.
-                numerator, denominator = 0., 0.
-                for ngram, count in ref_ngram_counts.items():
-                    denominator += count
-
-                    numerator += count * ref_ngram_weights[ngram]
-                if denominator == 0.:
-                    # Set precision to 0.
-                    ngram_prec.append(0.0)
-                else:
-                    ngram_prec.append(numerator / denominator)
-
-            print(ngram_prec)
+        #print("list of reference" + list_of_references)
+        reference = list_of_references
 
 
+        # Weighted ngram precisions and recalls for each order.
+        ngram_prec, ngram_rec = [], []
+        for order in range(1, max_order + 1):
 
-            # Compute recall against table fields.
-            table_mention_probs = [mention_fn(entry, reference)
-                                   for entry in table]
-            table_rec.append(sum(table_mention_probs) / len(table))
+            ref_ngram_counts = _ngram_counts(reference, order)
+            print(ref_ngram_counts)
+            ref_ngram_weights = {ngram: entailment_fn(ngram, table)
+                                 for ngram in ref_ngram_counts}
+            #clprint(ref_ngram_weights)
 
-            # Smoothing.
-            for order in range(1, max_order):
-                print(order)
-                if ngram_prec[order] == 0.:
-                    ngram_prec[order] = smoothing
+            # Precision.
+            numerator, denominator = 0., 0.
+            for ngram, count in ref_ngram_counts.items():
+                denominator += count
 
-            # Compute geometric averages of precision and recall for all orders.
-            w = 1. / max_order
-            if any(prec == 0. for prec in ngram_prec):
-                c_prec.append(0.)
+                numerator += count * ref_ngram_weights[ngram]
+            if denominator == 0.:
+                # Set precision to 0.
+                ngram_prec.append(0.0)
             else:
-                sp = (w * math.log(p_i) for p_i in ngram_prec)
-                c_prec.append(math.exp(math.fsum(sp)))
+                ngram_prec.append(numerator / denominator)
+
+        print(ngram_prec)
 
 
-            # Combine reference and table recalls.
-            if table_rec[-1] == 0.:
-                table_rec[-1] = smoothing
-            if table_rec[-1] == 0.:
-                c_rec.append(0.)
+
+        # Compute recall against table fields.
+        table_mention_probs = [mention_fn(entry, reference)
+                               for entry in table]
+        table_rec.append(sum(table_mention_probs) / len(table))
+
+        # Smoothing.
+        for order in range(1, max_order):
+            print(order)
+            if ngram_prec[order] == 0.:
+                ngram_prec[order] = smoothing
+
+        # Compute geometric averages of precision and recall for all orders.
+        w = 1. / max_order
+        if any(prec == 0. for prec in ngram_prec):
+            c_prec.append(0.)
+        else:
+            sp = (w * math.log(p_i) for p_i in ngram_prec)
+            c_prec.append(math.exp(math.fsum(sp)))
+
+
+        # Combine reference and table recalls.
+        if table_rec[-1] == 0.:
+            table_rec[-1] = smoothing
+        if table_rec[-1] == 0.:
+            c_rec.append(0.)
+        else:
+            if lambda_weight is None:
+                lw = sum([mention_fn(entry, reference) for entry in table
+                          ]) / len(table)
+                lw = 1. - lw
             else:
-                if lambda_weight is None:
-                    lw = sum([mention_fn(entry, reference) for entry in table
-                              ]) / len(table)
-                    lw = 1. - lw
-                else:
-                    lw = lambda_weight
-                all_lambdas.append(lw)
-                c_rec.append(
-                    math.exp(
-                             (lw) * math.log(table_rec[-1])))
+                lw = lambda_weight
+            all_lambdas.append(lw)
+            c_rec.append(
+                math.exp(
+                         (lw) * math.log(table_rec[-1])))
 
-            # F-score.
-            c_f.append((2. * c_prec[-1] * c_rec[-1]) /
-                       (c_prec[-1] + c_rec[-1] + 1e-8))
+        # F-score.
+        c_f.append((2. * c_prec[-1] * c_rec[-1]) /
+                   (c_prec[-1] + c_rec[-1] + 1e-8))
 
         # Get index of best F-score.
         max_i = max(enumerate(c_f), key=lambda x: x[1])[0]
