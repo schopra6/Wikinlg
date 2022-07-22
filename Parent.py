@@ -168,7 +168,7 @@ table entry is mentioned in the text. Its signature should
     reference_recalls, table_recalls = [], []
     all_lambdas = []
     instances = []
-    print(references)
+    #print(references)
     for raw_instance, list_of_references, table in zip(
             raw_instances, references, tables):
         c_prec, c_rec, c_f = [], [], []
@@ -182,7 +182,7 @@ table entry is mentioned in the text. Its signature should
         for order in range(1, max_order + 1):
 
             ref_ngram_counts = _ngram_counts(reference, order)
-            print(ref_ngram_counts)
+            #print(ref_ngram_counts)
             ref_ngram_weights = {ngram: entailment_fn(ngram, table)
                                  for ngram in ref_ngram_counts}
             #clprint(ref_ngram_weights)
@@ -210,7 +210,6 @@ table entry is mentioned in the text. Its signature should
 
         # Smoothing.
         for order in range(1, max_order):
-            print(order)
             if ngram_prec[order] == 0.:
                 ngram_prec[order] = smoothing
 
