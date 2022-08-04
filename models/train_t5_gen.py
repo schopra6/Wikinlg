@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=1)
-    
+    parser.add_argument("--similarity_score", type=int, default=0)
     args = parser.parse_args()
     return args
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     
     args = parse_args()
     
-    dataset = TripleDataset(args.data_path)
+    dataset = TripleDataset(args.data_path,args.similarity_score)
     dataset_train, dataset_val = train_test_split(dataset, test_size=.2, random_state=42)
     
     tokenizer = T5Tokenizer.from_pretrained('t5-base')

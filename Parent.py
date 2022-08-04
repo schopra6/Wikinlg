@@ -1,7 +1,7 @@
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors.
 # I have just rewritten stuff so that it works without tensorflow
-
+# code taken from https://github.com/KaijuML/PARENTing-rl
 """Script to compute PARENT metric."""
 
 import collections, itertools, math

@@ -1,41 +1,36 @@
 import torch
 import pandas as pd
-import jsonlines
 
 
 class TripleDataset(torch.utils.data.Dataset):
-  def __init__(self, filename, similarity_score):
-    self.df=[]
-    triples = []
-    sentence = []
-    with jsonlines.open(filename) as reader:
-        for d in reader:
-           if d['similarity'] > similarity_score:
-               triples.append(d['triples'])
-               sentence.append(d['text'])
-    self.df = pd.DataFrame([triples,sentence], index=['triples','sentence']).T
-  def __getitem__(self, idx):
-        sentence, triples = self.df.iloc[idx]['sentence'], self.df.iloc[idx]['triples']
+    def __init__(self, filename, with_extra=False):
+        self.df = pd.read_csv(filename)
+        self.with_extra = with_extra
 
+    def __getitem__(self, idx):
+        sentence, triples, title = self.df.iloc[idx]['sentence'], self.df.iloc[idx]['triples'], self.df.iloc[idx]['title']
+        
+        if not self.with_extra:
+            return sentence, eval(triples), title,
+        
+        extra = {'alias': [title] + eval(self.df.iloc[idx]['alias']), 'description': self.df.iloc[idx]['description']}
+        
+        return sentence, eval(triples), title, extra
 
-        return sentence, triples
-  def __len__(self):
+    def __len__(self):
         return len(self.df)
-
-
-
 
 
 def text_gen_collator(features, tokenizer, lang_gen):
     # Parse Data
-    sentences = [e[0] for e in features]
-    triples = [e[1] for e in features]
-    titles = [e[2] for e in features]
-    
+    sentences = [e['lex']['text'] for e in features]
+    triples = [e['original_triple_sets']['otriple_set'][0] for e in features]
+  
     
     def form_input(triples):
         res = "en_XX "
-        for subj, rel, obj in triples:
+        for trip in triples:
+            subj,rel,obj = trip.split('|')
             res += f"<trip> <subj> {subj} <rel> {rel} <obj> {obj} "
         res += lang_gen
         return res
@@ -153,19 +148,20 @@ def text_gen_to_extra_collator(features, tokenizer, lang_gen):
 
 def text_gen_collator_inference(features, tokenizer, lang_gen):
     # Parse Data
-    sentences = [sentence for sentence, _, _ in features]
-    triples = [triples for _, triples, _ in features]
-    titles = [title for _, _, title in features]
+    sentences = [e['lex']['text'] for e in features]
+    triples = [e['original_triple_sets']['otriple_set'][0] for e in features]
+  
     
     def form_input(triples):
         res = "en_XX "
-        for subj, rel, obj in triples:
+        for trip in triples:
+            subj,rel,obj = trip.split('|')
             res += f"<trip> <subj> {subj} <rel> {rel} <obj> {obj} "
         res += lang_gen
         return res
-            
     
     formed_input = [form_input(trips) for trips in triples]
+    print(formed_input[0])
 
     inputs = tokenizer(formed_input, max_length=512, padding=True, truncation=True, add_special_tokens=True, return_tensors='pt')
     
