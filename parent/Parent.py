@@ -182,10 +182,10 @@ table entry is mentioned in the text. Its signature should
         for order in range(1, max_order + 1):
 
             ref_ngram_counts = _ngram_counts(reference, order)
-            #print(ref_ngram_counts)
+            print(ref_ngram_counts)
             ref_ngram_weights = {ngram: entailment_fn(ngram, table)
                                  for ngram in ref_ngram_counts}
-            #clprint(ref_ngram_weights)
+            print(ref_ngram_weights)
 
             # Precision.
             numerator, denominator = 0., 0.
@@ -199,7 +199,6 @@ table entry is mentioned in the text. Its signature should
             else:
                 ngram_prec.append(numerator / denominator)
 
-        print(ngram_prec)
 
 
 
@@ -259,7 +258,7 @@ table entry is mentioned in the text. Its signature should
     avg_f_score = sum(all_f_scores) / len(all_f_scores)
 
 
-    with open('Textgen/output.jsonl', 'w') as outfile:
+    with open('output.jsonl', 'w') as outfile:
         for entry in instances:
             json.dump(entry, outfile)
             outfile.write('\n')

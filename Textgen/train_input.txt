@@ -1,2 +1,0 @@
-tillandsia￨EntName￨ENT1￨1￨2 araujei￨EntName￨ENT1￨2￨1 species￨taxon_rank￨ENT1￨1￨1
-duncan￨EntName￨ENT1￨1￨3 clinch￨EntName￨ENT1￨2￨2 heyward￨EntName￨ENT1￨3￨1 governor￨position_held￨ENT1￨1￨4 of￨position_held￨ENT1￨2￨3 south￨position_held￨ENT1￨3￨2 carolina￨position_held￨ENT1￨4￨1

@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from transformers import T5Tokenizer, T5ForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer
 from functools import partial
+
 import argparse
 
 from triple_dataset import TripleDataset, text_gen_collator
@@ -20,7 +21,7 @@ def parse_args():
     parser.add_argument("--save-dir", type=str, default='../models/')
     parser.add_argument("--log-dir", type=str, default='../log/')
                         
-    parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--lr", type=float, default=3e-5)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--epochs", type=int, default=1)
     parser.add_argument("--similarity_score", type=int, default=0)
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     
     dataset = TripleDataset(args.data_path,args.similarity_score)
     dataset_train, dataset_val = train_test_split(dataset, test_size=.2, random_state=42)
-    
+
     tokenizer = T5Tokenizer.from_pretrained('t5-base')
     
     tokens_list = ['en_XX', '<subj>', '<obj>', '<rel>', '<trip>']
@@ -42,11 +43,11 @@ if __name__ == '__main__':
     if args.language == 'breton':
         tokens_list.append('br_XX')
         lang_gen = 'br_XX'
-    
+    lang_gen = 'en_XX' 
     
     tokenizer.add_special_tokens({'additional_special_tokens': tokens_list})
     
-    model = T5ForConditionalGeneration.from_pretrained('t5-base')
+    model = T5ForConditionalGeneration.from_pretrained(args.model_path)
     model.resize_token_embeddings(len(tokenizer))
     
     
@@ -63,9 +64,8 @@ if __name__ == '__main__':
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         learning_rate=args.lr,
-        warmup_steps = 100,
         lr_scheduler_type='linear',
-        adam_beta2=0.98,
+        adam_beta2=0.999,
         label_smoothing_factor=0,
         num_train_epochs=args.epochs,
         logging_dir=f"{args.log_dir}{args.model_name}",

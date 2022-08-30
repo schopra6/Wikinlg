@@ -27,7 +27,7 @@ with jsonlines.open(path) as reader:
 diff = np.array(f_score) - np.array(s_filter_score)
 #print(s_filter_list)
 #print(p_filter_list.index([['Michael Kumbirai', 'occupation', 'rugby union player'], ['Michael Kumbirai', 'date of birth', '09 May 1996']]))
-path = '../Textgen/output.jsonl'
+path = '../parent/output.jsonl'
 
 filtered_records = []
 

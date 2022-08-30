@@ -1,3 +1,6 @@
+import nltk
+nltk.download('punkt')
+
 from nltk import word_tokenize
 import json, re, unidecode
 import csv
@@ -8,7 +11,7 @@ class Instance():
     def __init__(self, raw_instance):
         self.inputdict = self.tripleset2entities(raw_instance['triples'])
         self.lexicalizations = [
-            word_tokenize(unidecode.unidecode(raw_instance['sentence']).lower())]
+            word_tokenize(unidecode.unidecode(raw_instance['text']).lower())]
         self.inputs, self.table = self.dict2inputsNtable()
 
     def dict2inputsNtable(self):
@@ -79,8 +82,8 @@ def main():
 
         print(f"Starting with {setname}")
         path = f'corpus/{setname}.tsv'
-        with jsonlines.open(path) as reader:
-             dataset = [Instance(d) for d in reader]
+        with open(path) as reader:
+             dataset = [Instance(json.loads(d.replace("\'", "\""))) for d in reader]
         print(len(dataset))
         input_filename = f'Textgen/{setname}_input.txt'
         output_filename = f'Textgen/{setname}_output.txt'
