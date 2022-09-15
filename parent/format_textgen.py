@@ -75,19 +75,21 @@ class Instance():
         s = re.sub('\(.*\)', '', s)
         return s.strip()
 
-def main():
+
+
+def format_text(inputpath,outputpath):
     """We first deal with train and valid and then test"""
 
     for setname in ['train']:
 
         print(f"Starting with {setname}")
-        path = f'corpus/{setname}.tsv'
-        with open(path) as reader:
-             dataset = [Instance(json.loads(d.replace("\'", "\""))) for d in reader]
+
+        with open(inputpath) as reader:
+             dataset = [Instance(json.loads(d) for d in reader]
         print(len(dataset))
-        input_filename = f'Textgen/{setname}_input.txt'
-        output_filename = f'Textgen/{setname}_output.txt'
-        table_filename = f'Textgen/{setname}_tables.jl'
+        input_filename = f'{outputpath}/{setname}_input.txt'
+        output_filename = f'{outputpath}/{setname}_output.txt'
+        table_filename = f'{outputpath}/{setname}_tables.jl'
         with open(input_filename, mode='w', encoding='utf8') as inputf:
             with open(table_filename, mode='w', encoding='utf8') as tablef:
                 with open(output_filename, mode='w', encoding='utf8') as outputf:
@@ -98,5 +100,3 @@ def main():
                             outputf.write(' '.join(lex) + '\n')
 
 
-if __name__ == "__main__":
-    main()

@@ -130,6 +130,8 @@ def _ngram_counts(sequence, order):
 def parent(raw_instances,
            references,
            tables,
+           save_path,
+           save_filename,
            lambda_weight=0.5,
            smoothing=0.00001,
            max_order=4,
@@ -258,7 +260,7 @@ table entry is mentioned in the text. Its signature should
     avg_f_score = sum(all_f_scores) / len(all_f_scores)
 
 
-    with open('output.jsonl', 'w') as outfile:
+    with open(save_path+save_filename, 'w') as outfile:
         for entry in instances:
             json.dump(entry, outfile)
             outfile.write('\n')
