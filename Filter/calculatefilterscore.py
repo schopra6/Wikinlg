@@ -23,7 +23,7 @@ google_bleu = evaluate.load("google_bleu")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Split the noisy test dataset.')
+    parser = argparse.ArgumentParser(description='filter the dataset.')
     parser.add_argument('--input-path', type=str,
                         help='path to the dataset')
     parser.add_argument('--save-path', type=str,
@@ -38,6 +38,7 @@ def process_data(d):
             #filtering data having triple size less than 6
 
             if len(d['triples']) < 6:
+                #ngrams of text present in the the graph
                 gleu_score = google_bleu.compute(predictions=[d['text']],references = [[d['serialized_triples']]])
                 bleu_score = sacrebleu.corpus_bleu([d['serialized_triples']],[[d['text']]]).score
                 gleu_score= round(gleu_score["google_bleu"], 2)
@@ -64,26 +65,29 @@ if __name__ == '__main__':
     args = parse_args()
     #preprocessing for computing parent score
     format_text(args.input_path,args.save_path)
+    #computing parent score and adding to the dataset (f1 score is considered as parent score
     compute_parent(args.input_path,args.save_path,args.save_filename)
     with jsonlines.open(args.save_path+args.save_filename) as reader:
 
       with open(args.save_path+'parent' + args.save_filename, 'w') as outfile:
+        # final output file with all the filter score
 
         pool = Pool(multiprocessing.cpu_count())                         # Create a multiprocessing Pool
         for result in pool.imap(process_data, reader):
-            if result:
-             gleuStats.append(result[0])
-             bleuStats.append(result[1])
-             similarityStats.append(result[2]['similarity'])
-             parentStats.append(result[2]['f1'])
-             averageStats.append(result[2]['average_score'])
-             triplesetgleu[len(result[2]['triples'])].append(result[0])
-             triplesetbleu[len(result[2]['triples'])].append(result[1])
-             triplesetsimilarity[len(result[2]['triples'])].append(result[2]['similarity'])
-             triplesetparent[len(result[2]['triples'])].append(result[2]['f1'])
-             triplesetparent[len(result[2]['triples'])].append(result[2]['average'])
-             json.dump(result[2], outfile)
-             outfile.write('\n')
+            if result:# if result is not null , less than 6 tripleset
+                 # result = (gleu_score,bleu_score,jsonline)
+                 gleuStats.append(result[0])
+                 bleuStats.append(result[1])
+                 similarityStats.append(result[2]['similarity'])
+                 parentStats.append(result[2]['f1'])
+                 averageStats.append(result[2]['average_score'])
+                 triplesetgleu[len(result[2]['triples'])].append(result[0])
+                 triplesetbleu[len(result[2]['triples'])].append(result[1])
+                 triplesetsimilarity[len(result[2]['triples'])].append(result[2]['similarity'])
+                 triplesetparent[len(result[2]['triples'])].append(result[2]['f1'])
+                 triplesetparent[len(result[2]['triples'])].append(result[2]['average'])
+                 json.dump(result[2], outfile)
+                 outfile.write('\n')
 
 
 
