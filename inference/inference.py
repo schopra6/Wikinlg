@@ -33,8 +33,15 @@ if __name__ == '__main__':
     
     args = parse_args()
     
-    #dataset_val = TripleDataset(args.data_path)
-    dataset_val = load_dataset("web_nlg",'release_v3.0_en')['test']
+
+    if args.data_path == "web_nlg":
+        dataset_val = load_dataset("web_nlg",'release_v3.0_en')['test']
+        sentence = [e['lex']['text'] for e in dataset_val]
+        triples = [e['original_triple_sets']['otriple_set'][0] for e in dataset_val]
+        dataset_val = pd.DataFrame([triples,sentence], index=['triples','sentence']).T
+
+    else:
+        dataset_val = TripleDataset(args.data_path)
     lang_gen ='en_XX'
     #if None:
     #    _, dataset_val = train_test_split(dataset, test_size=.2, random_state=42)
