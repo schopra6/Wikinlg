@@ -10,6 +10,7 @@ import multiprocessing
 from parent.format_textgen import format_text
 from parent.compute_parent import compute_parent
 from collections import defaultdict
+import os
 triplesetgleu = defaultdict(list)
 triplesetsimilarity = defaultdict(list)
 triplesetbleu = defaultdict(list)
@@ -67,9 +68,9 @@ if __name__ == '__main__':
     format_text(args.input_path,args.save_path)
     #computing parent score and adding to the dataset (f1 score is considered as parent score
     compute_parent(args.input_path,args.save_path,args.save_filename)
-    with jsonlines.open(args.save_path+args.save_filename) as reader:
+    with jsonlines.open(args.save_path+ '/' +args.save_filename) as reader:
 
-      with open(args.save_path+'parent' + args.save_filename, 'w') as outfile:
+      with open(args.save_path+'/temp' + args.save_filename, 'w') as outfile:
         # final output file with all the filter score
 
         pool = Pool(multiprocessing.cpu_count())                         # Create a multiprocessing Pool
@@ -85,21 +86,24 @@ if __name__ == '__main__':
                  triplesetbleu[len(result[2]['triples'])].append(result[1])
                  triplesetsimilarity[len(result[2]['triples'])].append(result[2]['similarity'])
                  triplesetparent[len(result[2]['triples'])].append(result[2]['f1'])
-                 triplesetparent[len(result[2]['triples'])].append(result[2]['average'])
+                 triplesetparent[len(result[2]['triples'])].append(result[2]['average_score'])
                  json.dump(result[2], outfile)
                  outfile.write('\n')
+    os.system(f'rm -f {args.save_path}/{args.save_filename}')
+    os.system(f'mv {args.save_path}/temp{args.save_filename} {args.save_path}/{args.save_filename} ')
+    print('bleu stats')
+    print(pd.DataFrame(bleuStats).describe())
+    print('gleu stats')
+    print(pd.DataFrame(gleuStats).describe())
+    print('similarity stats')
+    print(pd.DataFrame(similarityStats).describe())
+    print('parent stats')
+    print(pd.DataFrame(parentStats).describe())
+    print('average stats')
+    print(pd.DataFrame(averageStats).describe())
 
-
-
-
-print(pd.DataFrame(bleuStats).describe())
-print(pd.DataFrame(gleuStats).describe())
-print(pd.DataFrame(similarityStats).describe())
-print(pd.DataFrame(parentStats).describe())
-print(pd.DataFrame(averageStats).describe())
-
-for k in range(1,6):
- print(f'bleu for size {k} : {np.mean(triplesetbleu[k])}')
- print(f'similarity for size {k} : {np.mean(triplesetsimilarity[k])}')
- print(f'gleu for size {k} : {np.mean(triplesetgleu[k])}')
- print(f'parent for size {k} : {np.mean(triplesetparent[k])}')
+    for k in range(1,6):
+     print(f'bleu for size {k} : {np.mean(triplesetbleu[k])}')
+     print(f'similarity for size {k} : {np.mean(triplesetsimilarity[k])}')
+     print(f'gleu for size {k} : {np.mean(triplesetgleu[k])}')
+     print(f'parent for size {k} : {np.mean(triplesetparent[k])}')

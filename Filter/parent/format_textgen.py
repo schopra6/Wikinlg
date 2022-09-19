@@ -85,7 +85,7 @@ def format_text(inputpath,outputpath):
         print(f"Starting with {setname}")
 
         with open(inputpath) as reader:
-             dataset = [Instance(json.loads(d) for d in reader]
+             dataset = [Instance(json.loads(d)) for d in reader]
         print(len(dataset))
         input_filename = f'{outputpath}/{setname}_input.txt'
         output_filename = f'{outputpath}/{setname}_output.txt'
