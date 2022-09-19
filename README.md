@@ -44,5 +44,17 @@ final filename with `parent<filename>.jsonl` with be stored
   
   `python split_noisy_val_dataset.py --noisy-dataset-path <path of noisydata.csv generated in the previous step> --webnlg-dataset-path <path to webnlg.csv>    --save-path <directory to save Wikinlg train and test data > --language-code <language of the data>`
   
-  
+## Fine Tune Model
+
+ We use pretrained T5 base model provided by hugging face to finetune on the filtered data.
+ 
+ `cd models`
+ 
+ `python train_t5_gen.py --data-path <train+dev data> --language "english" --model-name "t5-base" --save-dir "models/" --log-dir "log/" --batch_size "32" --epochs "5"`
+
+Input data must be in csv format with triples and text as columns. Triples must be a list of list of triples per instance. 
+
+## Evaluation 
+For evaluation , please refer https://github.com/WebNLG/GenerationEval repository.
+ 
  
