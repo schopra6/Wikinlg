@@ -35,16 +35,17 @@ The output file `<file containing scores>.jsonl` contains the original data alon
 
 ## Filtering noisy data (Kelm or TekGen)
 
-ADD CODE
+`python filter_data.py --input-path <path to noisy data> --save-path <path to save filtered data> --average-score <score above which data needs to be filtered>`
 
+A file with filtereddata.jsonl is saved
 
 ## Preparing test data
 
-### Convert filtered noisy data and WebNLG (from HF repo) to csv
+### Convert filtered data and WebNLG (from HF repo) to csv
 
  `cd simtestdata`
  
- `python data_to_csv.py --dataset-path <path to filtered noisy data> --save-path <path to save filter data and webnlg data>`
+ `python data_to_csv.py --dataset-path <path to filtered data(filtereddata.jsonl)> --save-path <path to save filter data and webnlg data>`
   
   This script converts data to csv and store them in  `<path to save filter data and webnlg data>`
 
@@ -64,12 +65,17 @@ Input data must be in csv format with triples and text as columns. Triples must 
 
 ## Inference
 
-Say how to generate and where the generated text are stored
+`cd inference`
+
+`python inference.py --data-path <web_nlg or wikinlg test data prepared previously> --checkpoint-dir <checkpoint directory of the saved model> --checkpoint-name <checkpoint-name of the saved model> --language "en" --out-pred-file <set filename of the generated predictions> --out-gold-file <set filename of the original sentences >`
+
 
 ## Evaluation
 
-Say which test data is used and which evaluation script to use
+Evaluation on WebNLG test and WikiNLG data
 
 For evaluation , please refer https://github.com/WebNLG/GenerationEval repository.
+
+use eval.py script
  
  
