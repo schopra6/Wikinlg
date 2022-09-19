@@ -34,3 +34,15 @@ final filename with `parent<filename>.jsonl` with be stored
 
 `parent<filename>.jsonl` contains original data along with sim_score, gleu_score, bleu_score , parent_score , average_score.
 
+ ### Prepare test data
+ 
+ `cd simtestdata`
+ 
+ `python data_to_csv.py --dataset-path <path of file generated in the previous step> --save-path <directory to save filter data and webnlg data>`
+  
+  This script converts data to csv. Two files are created noisydatacsv and webnlg.csv
+  
+  `python split_noisy_val_dataset.py --noisy-dataset-path <path of noisydata.csv generated in the previous step> --webnlg-dataset-path <path to webnlg.csv>    --save-path <directory to save Wikinlg train and test data > --language-code <language of the data>`
+  
+  
+ 
