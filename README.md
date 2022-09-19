@@ -14,14 +14,16 @@ Note: Following code has been implemented in Python3
 ## Dataset
 TekGen and KELM can be downloaded from  https://github.com/google-research-datasets/KELM-corpus
 
-## How to execute the code
+## Calculating Score on noisy data (= Kelm or TekGen)
+
 In order to execute the code from this repository and get the results, the following commands need to be run:
+
 
 `cd Filter`
 
-`python calculatefilterscore.py --input-path <path including filename> --save-path <directory to save filter score> --save-filename <filename to save parent filter score>`
+`python calculatefilterscore.py --input-path <path to noisy data> --save-path <path to save filter scores> --save-filename <file containing scores>`
 
-Each line is an example as a json object with three fields:
+Each line in the input file is an example as a json object with three fields:
 
 1. triples: A list of triples of the form (subject, relation, object). eg. (Person X, award received, Award Y). If the triple has a subproperty, then it is quadruple instead. eg. (Person X, Award Y, received on, Date Z). 
 
@@ -29,19 +31,25 @@ Each line is an example as a json object with three fields:
 
 3. Text: The generated natural language sentence for the triples.
 
+The output file `<file containing scores>.jsonl` contains the original data along with sim_score, gleu_score, bleu_score , parent_score , average_score.
 
-final filename with `parent<filename>.jsonl` with be stored
+## Filtering noisy data (Kelm or TekGen)
 
-`parent<filename>.jsonl` contains original data along with sim_score, gleu_score, bleu_score , parent_score , average_score.
+ADD CODE
 
- ### Prepare test data
- 
+
+## Preparing test data
+
+### Convert filtered noisy data and WebNLG (from HF repo) to csv
+
  `cd simtestdata`
  
- `python data_to_csv.py --dataset-path <path of file generated in the previous step> --save-path <directory to save filter data and webnlg data>`
+ `python data_to_csv.py --dataset-path <path to filtered noisy data> --save-path <path to save filter data and webnlg data>`
   
-  This script converts data to csv. Two files are created noisydatacsv and webnlg.csv
-  
+  This script converts data to csv and store them in  `<path to save filter data and webnlg data>`
+
+### Split filtered noisy data into train/dev/test
+
   `python split_noisy_val_dataset.py --noisy-dataset-path <path of noisydata.csv generated in the previous step> --webnlg-dataset-path <path to webnlg.csv>    --save-path <directory to save Wikinlg train and test data > --language-code <language of the data>`
   
 ## Fine Tune Model
@@ -50,11 +58,18 @@ final filename with `parent<filename>.jsonl` with be stored
  
  `cd models`
  
- `python train_t5_gen.py --data-path <train+dev data> --language "english" --model-name "t5-base" --save-dir "models/" --log-dir "log/" --batch_size "32" --epochs "5"`
+ `python train_t5_gen.py --data-path <directory to save Wikinlg train and test data> --language "english" --model-name "t5-base" --save-dir "models/" --log-dir "log/" --batch_size "32" --epochs "5"`
 
-Input data must be in csv format with triples and text as columns. Triples must be a list of list of triples per instance. 
+Input data must be in csv format with triples and text as columns. Triples must be a list of list of triples per instance.
 
-## Evaluation 
+## Inference
+
+Say how to generate and where the generated text are stored
+
+## Evaluation
+
+Say which test data is used and which evaluation script to use
+
 For evaluation , please refer https://github.com/WebNLG/GenerationEval repository.
  
  
