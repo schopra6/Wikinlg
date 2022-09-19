@@ -39,14 +39,16 @@ if __name__ == '__main__':
     wb_entities = list(itertools.chain(*wb_entities))
     wb_entities = list(itertools.chain(*wb_entities))
     
-    wb_entities = set(wb_entities)
+    wb_entities = list(map(str.strip,set(wb_entities)))
     
     wb_props = list(map(lambda x: list(map(lambda y: y[1], eval(x))), wb_df['triples']))
     wb_props = list(itertools.chain(*wb_props))
-    wb_props = set(wb_props)
-    
+    wb_props = list(map(str.strip,set(wb_props)))
+
     wb_triples = list(map(lambda x: eval(x), wb_df['triples']))
     wb_triples = list(itertools.chain(*wb_triples))
+    wb_triples = sort_and_deduplicate(wb_triples)
+    wb_triples = map(lambda x: [x[0].strip(),x[1].strip(),x[2].strip()],wb_triples)
     #wb_triples = list(itertools.chain(*wb_triples))
     #wb_triples = set(wb_triples)
     wb_graph = list(map(lambda x: eval(x), wb_df['triples']))
@@ -75,8 +77,10 @@ if __name__ == '__main__':
                 property_list.append(trip[1])
             if trip[0] in wb_entities or trip[2] in wb_entities:
                 known_entities = True
-                entities_list.append(trip[0])
-                entities_list.append(trip[2])
+                if trip[0] in wb_entities:
+                    entities_list.append(trip[0])
+                if trip[2] in wb_entities:
+                    entities_list.append(trip[2])
             if trip in wb_triples:
                 known_triples = True
                 triples_list.append(trip)
@@ -89,6 +93,10 @@ if __name__ == '__main__':
             my_df.iloc[i, 3] = "Yes"
         if not known_triples:
             my_df.iloc[i, 5] = "Yes"
+    property_list = set(property_list)
+    entities_list = set(entities_list)
+    triples_list = sort_and_deduplicate(triples_list)
+    graph_list = sort_and_deduplicate(graph_list)
     print(f'properties {len(property_list)} entities {len(entities_list)} triples {len(triples_list)} graph {len(graph_list)}')
     with open('properties.txt', 'w') as f:
         for line in property_list:
