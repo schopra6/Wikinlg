@@ -72,6 +72,7 @@ if __name__ == '__main__':
         known_properties = False
         known_triples = False
         for trip in triples:
+            trip = [trip[0].strip(),trip[1].strip,trip[2].strip]
             if trip[1] in wb_props:
                 known_properties = True
                 property_list.append(trip[1])
