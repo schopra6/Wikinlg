@@ -33,7 +33,7 @@ def text_gen_collator_inference(features, tokenizer, lang_gen):
     formed_input = [form_input(trips) for trips in triples]
     print(formed_input[0])
 
-    inputs = tokenizer(formed_input, max_length=512, padding=True, truncation=True, add_special_tokens=True, return_tensors='pt')
+    inputs = tokenizer(formed_input, max_length=256, padding=True, truncation=True, add_special_tokens=True, return_tensors='pt')
     
     # Encode inputs
     input_ids = inputs.input_ids

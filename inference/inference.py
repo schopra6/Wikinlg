@@ -74,7 +74,7 @@ if __name__ == '__main__':
     for batch, sentences in tqdm(loader):
         batch = { k: v.to(args.device, non_blocking=True) for k, v in batch.items() }
         with torch.no_grad():
-            generated_tokens = model.generate(**batch, max_length=30)
+            generated_tokens = model.generate(**batch, max_length=100)
             preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)
             pred_ys += preds
             ideal_ys += sentences
