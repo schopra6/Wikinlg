@@ -27,6 +27,6 @@ if __name__ == '__main__':
     dataset = load_dataset("web_nlg",'release_v3.0_en')
     dataset_cc = concatenate_datasets([dataset['train'], dataset['dev'],dataset['test']])
     features = list(dataset_cc)
-    web_triples = [list(map(lambda x: x.split('|').map,e['original_triple_sets']['otriple_set'][0])) for e in features]
+    web_triples = [list(map(lambda x:[y.strip() for y in  x.split('|')],e['original_triple_sets']['otriple_set'][0])) for e in features]
     df_webnlg = pd.DataFrame([web_triples], index=['triples']).T
     df_webnlg.to_csv(args.save_path+'webnlg.csv')
