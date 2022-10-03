@@ -53,6 +53,12 @@ A file with filtereddata.jsonl is saved
 
   `python split_noisy_val_dataset.py --noisy-dataset-path <path of noisydata.csv generated in the previous step> --webnlg-dataset-path <path to webnlg.csv>    --save-path <directory to save Wikinlg train and test data > --language-code <language of the data>`
   
+  ### Compute  unique entities, properties, triples and graphs
+  
+  `python compute_metadata.py --noisy-dataset-path <path of noisydata.csv generated in the previous step>     --save-path <path to save unique entities, properties, triples and graphs >`
+  
+  Four files are generated : noisy_entities.txt, noisy_graph.txt, noisy_properties.txt, noisy_triples.txt
+
 ## Fine Tune Model
 
  We use pretrained T5 base model provided by hugging face to finetune on the filtered data.
