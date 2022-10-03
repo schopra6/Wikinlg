@@ -52,7 +52,6 @@ if __name__ == '__main__':
     #wb_triples = list(itertools.chain(*wb_triples))
     #wb_triples = set(wb_triples)
     wb_graph = list(map(lambda x: eval(x), wb_df['triples']))
-    print(wb_graph[0])
     wb_graph = sort_and_deduplicate(wb_graph)
     property_list = []
     entities_list = []
