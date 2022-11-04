@@ -2,7 +2,7 @@
 # Project: Filtering Distant Supervision Data
 
 ## About this project
-In this project, we apply various filtering techniques on RDF/NL data created using distant supervision and explore impact on RDF-to-Text generation. We fine tune pretained models on top of filtered data from KELM and TekGen which covers more domains and not limited to WebNLG. The filtering of TekGen and KELM is done by finding semantic similarity between RDF triples and reference text.
+In this project, we apply various filtering techniques on RDF/NL data created using distant supervision and explore impact on RDF-to-Text generation. We fine tune pretrained models on top of filtered data from KELM and TekGen which covers more domains and not limited to WebNLG. The filtering of TekGen and KELM is done by finding semantic similarity between RDF triples and reference text.
 
 ## Installation
 Note: Following code has been implemented in Python3
